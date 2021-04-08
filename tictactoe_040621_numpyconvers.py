@@ -19,12 +19,9 @@ def start_game():
     global winsize
     global turn
     
-    # global pv
-    
     #numpy conversion:
         # 0 is placeholder, 1 is X, 2 is O
-        #board_main will track progress of the game
-        #board_dict will provide visual printout
+        #board_list will track progress of the game and be used to print current board
     board_size = int(input('Please enter board size: '))
     board_size_sq = board_size ** 2  
     board_list = np.zeros(board_size_sq)
@@ -34,17 +31,11 @@ def start_game():
         winsize = board_size
         print(f'Win condition exceeded board size. Win condition is now {board_size}.')
     turn = 0
-    
+   
     while game_state == True:    
         turn += 1
         player = (turn % 2) + 1
         game_state = play_round(player)
-            
-        
-    # print(board_list)
-    # print(board_grid)
-    # print('test:')
-    # print_board()
     
 def play_round(player):
     if player == 1:

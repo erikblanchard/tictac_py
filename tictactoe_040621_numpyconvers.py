@@ -123,7 +123,7 @@ def win_check(player):
     board_grid = board_list.copy().reshape((board_size, board_size))
     
     vert = get_verticals()
-    print(vert)
+    #print(vert)
     horz = get_horizontals()
     # print(horz)
     diags = get_diagonals()

@@ -83,12 +83,25 @@ def get_verticals():
     vert = []
     for i in range(board_size):
         vert.append(board_grid[:,i].tolist())
+    for lst in vert:
+        if len(lst) > winsize:
+            for i, item in enumerate(lst):
+                if i + winsize <= board_size+1:
+                    vert.append(lst[i:i+winsize])
+    vert[:] = [lst for lst in vert if not len(lst) < winsize]
+    vert[:] = [lst for lst in vert if not len(lst) > winsize]
     return vert
-
 def get_horizontals():    
     horz = []
     for i in range(board_size):
         horz.append(board_grid[i].tolist())
+    for lst in horz:
+        if len(lst) > winsize:
+            for i, item in enumerate(lst):
+                if i + winsize <= board_size+1:
+                    horz.append(lst[i:i+winsize])
+    horz[:] = [lst for lst in horz if not len(lst) < winsize]
+    horz[:] = [lst for lst in horz if not len(lst) > winsize]
     return horz
 
 def get_diagonals():    
@@ -100,9 +113,16 @@ def get_diagonals():
             if i > 0:    
                 diags.append(np.diag(board_grid,k=-i).tolist())
                 diags.append(np.diag(np.fliplr(board_grid),k=-i).tolist())
+    for lst in diags:
+        if len(lst) > winsize:
+            for i, item in enumerate(lst):
+                if i + winsize <= board_size+1:
+                    diags.append(lst[i:i+winsize])
+    diags[:] = [lst for lst in diags if not len(lst) < winsize]
+    diags[:] = [lst for lst in diags if not len(lst) > winsize]
     return diags
     
-        
+         
     # print(vert)
     # print(horz)
     # print(diag)
@@ -112,14 +132,12 @@ def win_check(player):
     board_grid = board_list.copy().reshape((board_size, board_size))
     
     vert = get_verticals()
-    # print(vert)
+    print(vert)
     horz = get_horizontals()
     # print(horz)
     diags = get_diagonals()
     # print(diags)
-    #This might be ultimately unneeded but gave me some practice implementing list comprehension
-    #Iterates over diags to delete any diagonal set that could not hold a win condition, resulting in a cleaner list
-    diags[:] = [lst for lst in diags if not len(lst) < winsize]
+
     
     for lst in vert:
         temp_collection = Counter(lst)

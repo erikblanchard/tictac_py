@@ -28,12 +28,12 @@ def main():
 
     while True:
         try:
-            board_size = int(input('Please enter board size: '))
+            s = int(input('Please enter board size: '))
             break
-        except:
+        except ValueError:
             print('Your input was invalid, please use an integer')
-    board_size_sq = board_size ** 2  
-    board_list = np.zeros(board_size_sq)
+    board = np.zeros((s, s))
+    #board_list = np.zeros(board_size_sq)
     # 0 is placeholder, 1 is X, 2 is O
     #board_list will track progress of the game and is used to print current board.
     #See win_check() for functions related to answer checking, which use board_list reshaped into a 2D array.
@@ -41,21 +41,21 @@ def main():
     while True:
         try:    
             win_size = int(input('Please enter win condition: '))
-            if win_size > board_size:
+            if win_size > s:
                 raise ValueError
             if win_size <= 1:
                 raise ValueError
             break
-        except:
-            print(f"Your input was invalid, please use an integer. Make sure it's not larger than your selected board size: {board_size}")
+        except ValueError:
+            print(f"Your input was invalid, please use an integer. Make sure it's not larger than your selected board size: {s}")
     
     turn = 0
     while game_state == True:    
         turn += 1
         player = (turn % 2) + 1
-        game_state = play_round(player, turn, board_list, board_size, board_size_sq, win_size)
+        game_state = play_round(player, turn, board, s, win_size)
     
-def play_round(player, turn, board_list, board_size, board_size_sq, win_size):
+def play_round(player, turn, board, s, win_size):
     if player == 1:
         symbol = 'X'
     else:
@@ -65,19 +65,20 @@ def play_round(player, turn, board_list, board_size, board_size_sq, win_size):
     print('--------------------------------')
     print('\n')
     while True:
-        print_board(board_list, board_size, board_size_sq)
+        print_board(board, s)
         move = None
         try:
-            move = int(input("Your move:"))
-        except:
+            move = int(input("Your move:")) - 1
+        except ValueError:
             print('Your input was invalid, please try again.')    
         print('\n')
         try:        
-            while move in range(1,board_size_sq+1):
-                if int(board_list[move-1]) == 0 :
-                    board_list[move-1] = player
-                    if win_check(player, board_list, board_size, win_size) == True:
-                        print_board(board_list, board_size, board_size_sq)
+            while move in range(0, s ** 2):
+                if int(board[move // s, move % s]) == 0 :
+                    #board_list[move-1] = player
+                    board[move // s, move % s] = player
+                    if win_check(player, board, s, win_size) == True:
+                        print_board(board, s)
                         print('--------------------------------')
                         print(f'{symbol} wins!')
                         print('--------------------------------')
@@ -87,7 +88,7 @@ def play_round(player, turn, board_list, board_size, board_size_sq, win_size):
                         return True
                 else:
                     raise ValueError
-        except:
+        except ValueError:
             print('That square was already picked, please choose another number')
 
 
@@ -156,15 +157,15 @@ def get_diagonals(board_size, board_grid, win_size):
     # print(horz)
     # print(diag)
     
-def win_check(player, board_list, board_size, win_size):
+def win_check(player, board, s, win_size):
     # global board_grid
-    board_grid = board_list.copy().reshape((board_size, board_size))
+    #board_grid = board_list.copy().reshape((board_size, board_size))
     
-    vert = get_verticals(board_size, board_grid, win_size)
+    vert = get_verticals(s, board, win_size)
     #print(vert)
-    horz = get_horizontals(board_size, board_grid, win_size)
+    horz = get_horizontals(s, board, win_size)
     # print(horz)
-    diags = get_diagonals(board_size, board_grid, win_size)
+    diags = get_diagonals(s, board, win_size)
     # print(diags)
 
     
@@ -183,7 +184,7 @@ def win_check(player, board_list, board_size, win_size):
     
     return False
 
-def print_board(board_list, board_size, board_size_sq):
+def print_board(board, s):
     '''
     Parameters
     ----------
@@ -198,12 +199,12 @@ def print_board(board_list, board_size, board_size_sq):
     -------
     Prints out a console friendly read out of the up-to-date gameboard.
     '''
-    padding = len(str(board_size_sq))
+    padding = len(str(s ** 2))
     counter = 0
-    board_grid = board_list.copy().reshape((board_size, board_size))
-    for row in range(board_size):
+    #board_grid = board_list.copy().reshape((board_size, board_size))
+    for row in range(s):
         temp_string = "|"
-        for i in board_grid[row]:
+        for i in board[row]:
             pmod = 1
             temp_i = str(int(i))
             temp_val = ''

@@ -12,7 +12,7 @@ import numpy as np
 from collections import Counter
 
 
-def start_game():
+def main():
     global board_size
     global board_size_sq
     global board_list
@@ -173,4 +173,4 @@ def print_board():
             temp_string += temp_val + "|"
         print(temp_string) 
         
-start_game()
+main()

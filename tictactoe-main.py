@@ -13,8 +13,6 @@ from collections import Counter
 
 def main():
     
-    
-    
     print(
     '''
     Welcome to advanced tic-tac-toe!
@@ -27,79 +25,75 @@ def main():
     )
 
     while True:
+        #Loop to establish boardsize. s*s = np.zeros array. Must be > 3
         try:
             s = int(input('Please enter board size: '))
+            if s < 3:
+                raise ValueError
             break
         except ValueError:
-            print('Your input was invalid, please use an integer')
-    board = np.zeros((s, s))
-    #board_list = np.zeros(board_size_sq)
-    # 0 is placeholder, 1 is X, 2 is O
-    #board_list will track progress of the game and is used to print current board.
-    #See win_check() for functions related to answer checking, which use board_list reshaped into a 2D array.
-    game_state = True
+            print('Your input was invalid or too small, please use an integer')
     while True:
+        #Loop to establish a valid win condition. Must be <= s and >= 1
         try:    
             win_size = int(input('Please enter win condition: '))
-            if win_size > s:
-                raise ValueError
-            if win_size <= 1:
+            if win_size > s or win_size <= 1:
                 raise ValueError
             break
         except ValueError:
             print(f"Your input was invalid, please use an integer. Make sure it's not larger than your selected board size: {s}")
     
+    board = np.zeros((s, s))
+    game_state = True
+    
+    #global vars
+    global turn
+    global symbol
+    
     turn = 0
+    symbol = {1:'X',2:'O'}
+    
     while game_state == True:    
         turn += 1
         player = (turn % 2) + 1
-        game_state = play_round(player, turn, board, s, win_size)
+        game_state = play_round(player, board, s, win_size)
     
-def play_round(player, turn, board, s, win_size):
-    if player == 1:
-        symbol = 'X'
-    else:
-        symbol = 'O'
-    print('--------------------------------')
-    print(f"Turn {turn} :: {symbol}'s move")
-    print('--------------------------------')
-    print('\n')
+def play_round(player, board, s, win_size):
+    print('\n--------------------------------')
+    print(f"Turn {turn} :: {symbol[player]}'s move")
+    print('--------------------------------\n')
     while True:
         print_board(board, s)
-        move = None
         try:
             move = int(input("Your move:")) - 1
+            if move not in range(0,s**2):
+                raise ValueError
+            if int(board[move // s, move % s]) != 0:
+                raise LookupError
         except ValueError:
-            print('Your input was invalid, please try again.')    
-        print('\n')
-        try:        
-            while move in range(0, s ** 2):
-                if int(board[move // s, move % s]) == 0 :
-                    #board_list[move-1] = player
-                    board[move // s, move % s] = player
-                    if win_check(player, board, s, win_size) == True:
-                        print_board(board, s)
-                        print('--------------------------------')
-                        print(f'{symbol} wins!')
-                        print('--------------------------------')
-                        print('\n')
-                        return False
-                    else:    
-                        return True
-                else:
-                    raise ValueError
-        except ValueError:
-            print('That square was already picked, please choose another number')
-
+            print(f'Your input was invalid, please try again. Must be an integer within range of 1 and {s**2}')
+        except LookupError:
+            print('That space was already picked, please choose another number')
+        else:
+            board[move // s, move % s] = player
+            if win_check(player, board, s, win_size, get_rcd(s, board, win_size)) == True:
+                print('\n')
+                print_board(board, s)
+                print('\n--------------------------------')
+                print(f'{symbol[player]} wins!')
+                print('--------------------------------\n')
+                return False
+            else:    
+                return True
 
     
-def get_verticals(board_size, board_grid, win_size):
+def get_rcd(s, board, win_size):
     '''
     Parameters
     ----------
-    board_size : int
+    s : int
          number that acts as the main parameter for calculating the two axises of the game board.
-    board_grid : numpy array
+    board : numpy array
         Allows for parsing possible win-cases
     win_size : int
         win condition, ie how many contiguous spaces a player needs to win.
@@ -110,78 +104,35 @@ def get_verticals(board_size, board_grid, win_size):
         List of all possible verticals that could ammount to a win-case.
         Function omits verticals that are either too large or too small.
     '''
-    vert = []
-    for i in range(board_size):
-        vert.append(board_grid[:,i].tolist())
-    for lst in vert:
-        if len(lst) > win_size:
-            for i, item in enumerate(lst):
-                if i + win_size <= board_size+1:
-                    vert.append(lst[i:i+win_size])
-    vert[:] = [lst for lst in vert if not len(lst) < win_size]
-    vert[:] = [lst for lst in vert if not len(lst) > win_size]
-    return vert
-def get_horizontals(board_size, board_grid, win_size):    
-    horz = []
-    for i in range(board_size):
-        horz.append(board_grid[i].tolist())
-    for lst in horz:
-        if len(lst) > win_size:
-            for i, item in enumerate(lst):
-                if i + win_size <= board_size+1:
-                    horz.append(lst[i:i+win_size])
-    horz[:] = [lst for lst in horz if not len(lst) < win_size]
-    horz[:] = [lst for lst in horz if not len(lst) > win_size]
-    return horz
-
-def get_diagonals(board_size, board_grid, win_size):    
-    diags = []
-    for ii in range(board_size):
-        for i in range(board_size):
-            diags.append(np.diag(board_grid,k=i).tolist())
-            diags.append(np.diag(np.fliplr(board_grid),k=i).tolist())
+    
+    #rows, columns, diags: for win condition
+    rcd = []
+    for ii in range(s):
+        rcd.append(board[:,ii].tolist())
+        rcd.append(board[ii].tolist())
+        for i in range(s):
+            rcd.append(np.diag(board,k=i).tolist())
+            rcd.append(np.diag(np.fliplr(board),k=i).tolist())
             if i > 0:    
-                diags.append(np.diag(board_grid,k=-i).tolist())
-                diags.append(np.diag(np.fliplr(board_grid),k=-i).tolist())
-    for lst in diags:
+                rcd.append(np.diag(board,k=-i).tolist())
+                rcd.append(np.diag(np.fliplr(board),k=-i).tolist())
+    for lst in rcd:
         if len(lst) > win_size:
             for i, item in enumerate(lst):
-                if i + win_size <= board_size+1:
-                    diags.append(lst[i:i+win_size])
-    diags[:] = [lst for lst in diags if not len(lst) < win_size]
-    diags[:] = [lst for lst in diags if not len(lst) > win_size]
-    return diags
-    
-         
-    # print(vert)
-    # print(horz)
-    # print(diag)
-    
-def win_check(player, board, s, win_size):
-    # global board_grid
-    #board_grid = board_list.copy().reshape((board_size, board_size))
-    
-    vert = get_verticals(s, board, win_size)
-    #print(vert)
-    horz = get_horizontals(s, board, win_size)
-    # print(horz)
-    diags = get_diagonals(s, board, win_size)
-    # print(diags)
+                if i + win_size <= s+1:
+                    rcd.append(lst[i:i+win_size])
+            
+    rcd[:] = [lst for lst in rcd if not len(lst) < win_size] and [lst for lst in rcd if not len(lst) > win_size]
+
+    return rcd
 
     
-    for lst in vert:
+def win_check(player, board, s, win_size, rcd):
+
+    for lst in rcd:
         temp_collection = Counter(lst)
         if temp_collection.get(player) == win_size:
             return True
-    for lst in horz:
-        temp_collection = Counter(lst)
-        if temp_collection.get(player) == win_size:
-            return True    
-    for lst in diags:
-        temp_collection = Counter(lst)
-        if temp_collection.get(player) == win_size:
-            return True
-    
     return False
 
 def print_board(board, s):
@@ -201,7 +152,6 @@ def print_board(board, s):
     '''
     padding = len(str(s ** 2))
     counter = 0
-    #board_grid = board_list.copy().reshape((board_size, board_size))
     for row in range(s):
         temp_string = "|"
         for i in board[row]:

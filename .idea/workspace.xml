@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a63825f0-7ff9-4cfc-a555-38a7f17f33ff" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/tictac_py.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tictactoe-main.py" beforeDir="false" afterPath="$PROJECT_DIR$/tictactoe-main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -12,6 +12,9 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/tictactoe-main.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectId" id="1qzXBgbv0ZfV6A8tRv5Bi2ovC7K" />
   <component name="ProjectViewState">

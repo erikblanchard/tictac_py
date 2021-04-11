@@ -1,62 +1,7 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Apr  4 23:16:23 2021
 
-Attemping to convert game board to use numpy array.
-
-@author: ErikB
-"""
-import discord
 import numpy as np
 from collections import Counter
-
-
-def main():
-    print(
-        '''
-    Welcome to advanced tic-tac-toe!
-    You will be asked to select two parameters for the game: board size and win condition.
-    For board size: Input a single number that will act as both the X and Y axis of the board.
-    ~~This number should not be smaller than 3!~~
-    For win condition: Input a single number that represents how many contiguous spaces in a straight line you need to win.
-    ~~This number should be no smaller than 2 and no larger than your selected board size!~~
-    '''
-    )
-
-    while True:
-        # Loop to establish boardsize. s*s = np.zeros array. Must be > 3
-        try:
-            s = int(input('Please enter board size: '))
-            if s < 3:
-                raise ValueError
-            break
-        except ValueError:
-            print('Your input was invalid or too small, please use an integer')
-    while True:
-        # Loop to establish a valid win condition. Must be <= s and >= 1
-        try:
-            win_size = int(input('Please enter win condition: '))
-            if win_size > s or win_size <= 1:
-                raise ValueError
-            break
-        except ValueError:
-            print(
-                f"Your input was invalid, please use an integer. Make sure it's not larger than your selected board size: {s}")
-
-    board = np.zeros((s, s))
-    game_state = True
-
-    # global vars
-    global turn
-    global symbol
-
-    turn = 0
-    symbol = {1: 'X', 2: 'O'}
-
-    while game_state == True:
-        turn += 1
-        player = (turn % 2) + 1
-        game_state = play_round(player, board, s, win_size)
 
 
 def play_round(player, board, s, win_size):
@@ -77,30 +22,23 @@ def play_round(player, board, s, win_size):
             print('That space was already picked, please choose another number')
         else:
             board[move // s, move % s] = player
-            if win_check(player, board, s, win_size, get_rcd(s, board, win_size)) == 'Win':
-                print('\n')
-                print_board(board, s)
-                print('\n--------------------------------')
-                print(f'{symbol[player]} wins!')
-                print('--------------------------------\n')
+            win_check_temp = win_check(player, win_size, get_rcd(s, board, win_size))
+            if win_check_temp == 'Win':
+                print_end(f'{symbol[player]} wins!', board, s)
                 return False
-            elif win_check(player, board, s, win_size, get_rcd(s, board, win_size)) == 'Tie':
-                print('\n')
-                print_board(board, s)
-                print('\n--------------------------------')
-                print('Tied game, no more moves!')
-                print('--------------------------------\n')
+            elif win_check_temp == 'Tie':
+                print_end('Tied game, no more moves!', board, s)
                 return False
             else:
                 return True
 
 
 def get_rcd(s, board, win_size):
-    '''
+    """
     Parameters
     ----------
     s : int
-         number that acts as the main parameter for calculating the two axises of the game board.
+         number that acts as the main parameter for calculating the two axes of the game board.
     board : numpy array
         Allows for parsing possible win-cases
     win_size : int
@@ -108,12 +46,11 @@ def get_rcd(s, board, win_size):
 
     Returns
     -------
-    vert : list
-        List of all possible verticals that could ammount to a win-case.
-        Function omits verticals that are either too large or too small.
-    '''
+    rcd : list
+    Row Columns Diagonals, list of all possible axes that could meet win condition
+    """
 
-    # rows, columns, diags: for win condition
+    # rows, columns, diagonals: for win condition
     rcd = []
     for ii in range(s):
         rcd.append(board[:, ii].tolist())
@@ -130,18 +67,19 @@ def get_rcd(s, board, win_size):
                 if i + win_size <= s + 1:
                     rcd.append(lst[i:i + win_size])
 
+    # list comprehension to omit any axis list that is not equal to win condition(win_size)
     rcd[:] = [lst for lst in rcd if not len(lst) < win_size] and [lst for lst in rcd if not len(lst) > win_size]
 
     return rcd
 
 
-def win_check(player, board, s, win_size, rcd):
+def win_check(player, win_size, rcd):
     tie_check = 0
     for lst in rcd:
         temp_collection = Counter(lst)
         if temp_collection.get(player) == win_size:
             return 'Win'
-        elif temp_collection.get(0) == None:
+        elif temp_collection.get(0) is None:
             tie_check += 0
         else:
             tie_check += temp_collection.get(0)
@@ -150,28 +88,24 @@ def win_check(player, board, s, win_size, rcd):
     return 'None'
 
 
-
 def print_board(board, s):
-    '''
+    """
     Parameters
     ----------
-    board_list : numpy 1D array
-        lists all current values
-    board_size : int
-         number that acts as the main parameter for calculating the two axises of the game board.
-    board_size_sq : int
-        square of board_size, ie total number of spaces on board.
+    board : numpy array
+    s : int
+        Board size, (s*s = board dimensions)
 
-    Prints
+    Returns
     -------
-    Prints out a console friendly read out of the up-to-date gameboard.
-    '''
+    terminal printout of current game board.
+    """
     padding = len(str(s ** 2))
     counter = 0
     for row in range(s):
         temp_string = "|"
         for i in board[row]:
-            pmod = 1
+            padding_mod = 1
             temp_i = str(int(i))
             temp_val = ''
             counter += 1
@@ -182,29 +116,99 @@ def print_board(board, s):
             if temp_i == '2':
                 temp_val = 'O'
             while len(temp_val) != padding:
-                if pmod % 2 == 1:
+                if padding_mod % 2 == 1:
                     temp_val = ' ' + temp_val
-                    pmod += 1
+                    padding_mod += 1
                 else:
                     temp_val = temp_val + ' '
-                    pmod += 1
+                    padding_mod += 1
             temp_string += temp_val + "|"
         print(temp_string)
+
+
+def print_end(message, board, s):
+    """
+    Parameters
+    ----------
+    message : string
+        provided by function call, either game win message or tie.
+    board : numpy array
+    s : int
+
+    Returns
+    -------
+    end message depending on board state, win vs tie.
+    """
+    print('\n')
+    print_board(board, s)
+    print('\n--------------------------------')
+    print(message)
+    print('--------------------------------\n')
+
+
+def main():
+    print(
+        '''
+    Welcome to advanced tic-tac-toe!
+    You will be asked to select two parameters for the game: board size and win condition.
+    For board size: Input a single number that will act as both the X and Y axis of the board.
+    ~~This number should not be smaller than 3!~~
+    For win condition: Input a single number that represents how many contiguous spaces in a straight line you need to win.
+    ~~This number should be no smaller than 2 and no larger than your selected board size!~~
+    '''
+    )
+
+    while True:
+        # Loop to establish board size. s*s = np.zeros array. Must be > 3
+        try:
+            s = int(input('Please enter board size: '))
+            if s < 3:
+                raise ValueError
+            break
+        except ValueError:
+            print('Your input was invalid or too small, please use an integer')
+    while True:
+        # Loop to establish a valid win condition. Must be <= s and >= 1
+        try:
+            win_size = int(input('Please enter win condition: '))
+            if win_size > s or win_size <= 1:
+                raise ValueError
+            break
+        except ValueError:
+            print(
+                "Your input was invalid, please use an integer. "
+                f"Make sure it's not larger than your selected board size: {s}")
+
+    board = np.zeros((s, s))
+    game_state = True
+
+    # global vars
+    global turn
+    global symbol
+
+    turn = 0
+    symbol = {1: 'X', 2: 'O'}
+
+    while game_state is True:
+        turn += 1
+        player = (turn % 2) + 1
+        game_state = play_round(player, board, s, win_size)
+
 
 game = True
 game_number = 1
 
-while game == True:
+while game is True:
     print(f'Starting Game {game_number}!')
     main()
     while True:
         try:
             game_bool = input('Game over. Would you like to play again? Y/N: ')
-            if game_bool == 'Y':
+            if game_bool.upper() in ['Y', 'YES']:
                 game_number += 1
                 game = True
                 break
-            elif game_bool == 'N':
+            elif game_bool.upper() in ['N', 'NO']:
                 game = False
                 break
             else:
